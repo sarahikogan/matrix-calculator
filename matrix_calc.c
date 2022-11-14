@@ -1,150 +1,80 @@
-// Homework 3: Matrix Calculator
+// Homework 4: Structures
 // Sarah Kogan
-// Due Friday 9/16
+// Due Monday 9/26
+// Implement structures in C to read 1D matrices from files, store the data in a 1D array struct and perform matrix math. 
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <math.h>
+// matrix_calc.c 
+// holds the main() function 
 
-// FUNCTION DECLARATIONS
-void printMatrix(int rmat, int cmat, float M[][cmat]);
-void add(int rA, int cA, int rB, int cB, float mA[][cA], float mB[][cB]);
-void subtract(int rA, int cA, int rB, int cB, float mA[][cA], float mB[][cB]);
-void multiply(int rA, int cA, int rB, int cB, float A[][cA], float B[][cB]);
+#include "matrix_math.h"
+#include "matrix_math.c"
 
-// PRINTMATRIX
-void printMatrix(int rmat, int cmat, float M[][cmat]) {
+int ct = 0; 
+int sizes[2];
+int main(int argc, char*argv[]) {
 
-    int i, j;
+    struct matrix matrixA, matrixB; 
 
-    for (i=0; i<rmat; i++) {
-        for (j=0; j<cmat; j++) {
-            printf("%8.2f", M[i][j]);
-            if (j==cmat-1) {
-                printf("\n");
-            }  // end newline if
-        } // end col for
-    } // end row for
+    matrixA = readMatrix(argv[1]);  // input 1
+    matrixB = readMatrix(argv[2]);  // input 2
 
-} // end printMatrix
-
-// ADD
-void add(int rA, int cA, int rB, int cB, float mA[][cA], float mB[][cB]) {
-
-    printf("A + B = \n");
-
-    float matc[rA][cA]; // initialize matrix with same dimensions as original 
-    int i, j; 
-
-    for (i=0; i<rA; i++) {
-        for (j=0; j<cA; j++) {
-            matc[i][j] = mA[i][j] + mB[i][j];
-        } // end col for
-    } // end row for
-
-    printMatrix(rA, cA, matc);
-} // end add
-
-// SUBTRACT
-void subtract(int rA, int cA, int rB, int cB, float mA[][cA], float mB[][cB]) {
-
-    printf("A - B = \n");
-
-    float matc[rA][cA]; // initialize matrix with same dimensions as original 
-    int i, j; 
-
-    for (i=0; i<rA; i++) {
-        for (j=0; j<cA; j++) {
-            matc[i][j] = mA[i][j] - mB[i][j];
-        } // end col for
-    } // end row for
-
-    printMatrix(rA, cA, matc);
-} // end subtract
-
-// MULTIPLY
-void multiply(int rA, int cA, int rB, int cB, float A[][cA], float B[][cB]) {
-
-    printf("A * B = \n");
-
-    int i, j, k;
-    float matc[rA][cB];
-
-    for (i=0; i<rA; i++) { 
-        for (j=0; j<cB; j++) {
-            matc[i][j] = 0; // initialize
-
-            for (k=0; k<rB; k++) {
-                matc[i][j] += (A[i][k] * B[k][j]); // matrix multiplication rule
-            } // end rB for
-        } // end cB for
-    } // end rA for
-
-    printMatrix(rA, cB, matc);
-} // end multiply
-
-
-// MAIN
-int main() {
-
-    int i, j;
-    int max, may, mbx, mby;
-
-    // TAKE USER INPUTS
-
-    // MAT A INPUT
-    printf("What is the size of matrix A: \n"); // size
-    scanf("%i %i", &max, &may);
-
-    float mata[max][may]; // create matrix
-
-    printf("Enter the value for A: \n"); // values
-    for (i=0; i<max; i++) { // scan in numbers
-        for (j=0; j<may; j++) {
-            scanf("%f", &mata[i][j]);
-        } // end for
-    } // end for
-
-    // MAT B INPUT
-    printf("What is the size of matrix B: \n"); // matrix b
-    scanf("%i %i", &mbx, &mby);
-
-    float matb[mbx][mby]; // create matrix
-
-    int k, l;
-
-    printf("Enter the value for B: \n"); // enter values
-    for (k=0; k<mbx; k++) {
-        for (l=0; l<mby; l++) {
-            scanf("%f", &matb[k][l]);
-        } // end for
-    } // end for
-
-    printf("Would you like to add, subtract or multiply? Please enter a, s or m: \n");
     char op;
-    scanf(" %c", &op);
+     strcpy(&op, argv[3]); // input 3: operation (a, s, or n)
 
-    if (op == 'a' || op == 's') { // adding or subtracting
-        if (max == mbx && may == mby) { // matrices are the same size
-            if (op == 'a') {
-                add(max, may, mbx, mby, mata, matb); // add
-            }
-            if (op == 's') {
-                subtract(max, may, mbx, mby, mata, matb); // subtract
-            }
-        } else {
-            printf("This math cannot be performed.\n");
-            return 0;
+    if (sizes[0] == sizes[1]) {
+        switch (op) {
+            case 'a':
+                printf("add");
+                add(&matrixA, &matrixB);
+                break;
+            case 's':
+                printf("subtract");
+                sub(&matrixA, &matrixB);
+                break;
+            case 'n':
+                printf("average");
+                avg(&matrixA, &matrixB);
+                break;
         }
-    } else if (op == 'm') {
-        if (may == mbx) { // rows of a == columns of b
-            multiply(max, may, mbx, mby, mata, matb); // multiply
-        } else {
-            printf("This math cannot be performed.\n");
-            return 0;
-        }
-    }
+    } else {
+        printf("\nThis math cannot be performed.");
+    };
 
-    return 1;
+}
+
+// read matrix
+// takes in file name 
+// returns matrix with data from the file 
+
+struct matrix readMatrix(char* fileName) {
+
+    FILE *in_file = fopen(fileName, "r");
+    int size; 
+    fscanf(in_file, "%d", &size); // scan through the file 
+    if (ct < 2) {
+        ct ++; 
+        sizes[ct] = size; // set sizes of matrices
+    } // end if 
+
+    // make and fill aray
+    float *arr = malloc(size * sizeof(float)); // allocate mem for array
+    
+    for (int i=0; i<size;i++) { 
+        fscanf(in_file, "%f", &arr[i]);
+    } // add values into the array
+
+    fclose(in_file);
+
+    struct matrix output = {size, arr};
+
+    return (struct matrix) output; 
+
+}
+
+// delete matrix 
+// takes in a matrix pointer to delete
+// returns void and deletes the matrix
+
+void deleteMatrix(struct matrix *mat) {
+    free (mat);
 }
